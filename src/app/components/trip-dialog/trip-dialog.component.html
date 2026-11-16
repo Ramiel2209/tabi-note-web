@@ -1,0 +1,25 @@
+<div class="modal-backdrop" *ngIf="open" (click)="closed.emit()"></div>
+<section class="app-modal" *ngIf="open" role="dialog" aria-modal="true" aria-labelledby="tripDialogTitle">
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="dialog-heading"><div><p class="section-kicker">新的旅行小冊</p><h2 id="tripDialogTitle">{{ trip ? '編輯旅程' : '新增一趟旅程' }}</h2></div><button class="close-button" type="button" aria-label="關閉" (click)="closed.emit()">×</button></div>
+    <div class="creator-preview"><span>建立者</span><strong>{{ currentUserName || 'Google 使用者' }}</strong><small>會自動使用目前登入的 Google 名稱</small></div>
+    <label>旅程名稱 <span class="required-mark">*</span><input formControlName="name" maxlength="40" placeholder="例如：京都櫻花小旅行" /></label>
+    <small class="field-error" *ngIf="form.controls.name.touched && form.controls.name.invalid">請輸入旅程名稱。</small>
+    <label>主要城市 <span class="required-mark">*</span><input formControlName="city" maxlength="20" placeholder="例如：京都" /></label>
+    <small class="field-error" *ngIf="form.controls.city.touched && form.controls.city.invalid">請輸入主要城市。</small>
+    <div class="form-row"><label>開始日期 <span class="required-mark">*</span><input formControlName="startDate" type="date" /></label><label>結束日期 <span class="required-mark">*</span><input formControlName="endDate" type="date" /></label></div>
+    <small class="field-error" *ngIf="form.controls.startDate.touched && form.controls.startDate.invalid || form.controls.endDate.touched && form.controls.endDate.invalid">請填寫完整日期。</small>
+    <small class="field-error" *ngIf="dateError">{{ dateError }}</small>
+    <section class="trip-detail-editor" aria-labelledby="flightEditorTitle">
+      <div class="detail-editor-heading"><div><h3 id="flightEditorTitle">✈️ 航班</h3><small>可加入去程、回程或轉機資訊</small></div></div>
+      <div class="detail-editor-form" [formGroup]="flightForm"><div class="form-row"><label>航空公司 *<input formControlName="airline" placeholder="例如：長榮航空" /></label><label>航班編號 *<input formControlName="flightNumber" placeholder="例如：BR198" /></label></div><div class="form-row"><label>出發地 *<input formControlName="departure" placeholder="例如：桃園 TPE" /></label><label>抵達地 *<input formControlName="arrival" placeholder="例如：成田 NRT" /></label></div><div class="form-row"><label>出發時間 *<input formControlName="departureAt" type="datetime-local" /></label><label>抵達時間 *<input formControlName="arrivalAt" type="datetime-local" /></label></div><label>備註<input formControlName="note" placeholder="例如：第 2 航廈、含一件托運" /></label><small class="field-error" *ngIf="flightForm.touched && flightForm.invalid">請填寫完整航班資料。</small><small class="field-error" *ngIf="flightDateError">{{ flightDateError }}</small><button class="secondary-button detail-add-button" type="button" (click)="addFlight()">＋ 新增航班</button></div>
+      <div class="saved-detail-list" *ngIf="flights.length > 0"><div class="saved-detail-row" *ngFor="let flight of flights"><span><strong>{{ flight.airline }} {{ flight.flightNumber }}</strong><small>{{ flight.departure }} → {{ flight.arrival }}</small></span><button class="detail-remove" type="button" (click)="removeFlight(flight.id)">移除</button></div></div>
+    </section>
+    <section class="trip-detail-editor" aria-labelledby="hotelEditorTitle">
+      <div class="detail-editor-heading"><div><h3 id="hotelEditorTitle">🏨 飯店</h3><small>飯店名稱儲存後會自動建立 Google Maps 連結</small></div></div>
+      <div class="detail-editor-form" [formGroup]="hotelForm"><label>飯店名稱 *<input formControlName="name" placeholder="例如：新宿格拉斯麗酒店" /></label><label>地址 *<input formControlName="address" placeholder="例如：東京都新宿區歌舞伎町" /></label><div class="form-row"><label>入住日期 *<input formControlName="checkIn" type="date" /></label><label>退房日期 *<input formControlName="checkOut" type="date" /></label></div><label>Google Maps 連結 <span class="label-hint">可留白，自動用名稱與地址搜尋</span><input formControlName="mapsUrl" inputmode="url" placeholder="https://maps.google.com/..." /></label><label>備註<input formControlName="note" placeholder="例如：訂房編號、早餐時間" /></label><small class="field-error" *ngIf="hotelForm.touched && hotelForm.invalid">請填寫完整飯店資料。</small><small class="field-error" *ngIf="hotelDateError">{{ hotelDateError }}</small><button class="secondary-button detail-add-button" type="button" (click)="addHotel()">＋ 新增飯店</button></div>
+      <div class="saved-detail-list" *ngIf="hotels.length > 0"><div class="saved-detail-row" *ngFor="let hotel of hotels"><span><strong>{{ hotel.name }}</strong><small>{{ hotel.checkIn }} — {{ hotel.checkOut }}</small></span><button class="detail-remove" type="button" (click)="removeHotel(hotel.id)">移除</button></div></div>
+    </section>
+    <div class="dialog-actions"><button class="secondary-button" type="button" (click)="closed.emit()">先不要</button><button class="primary-button" type="submit">{{ trip ? '儲存修改' : '建立旅程' }}</button></div>
+  </form>
+</section>

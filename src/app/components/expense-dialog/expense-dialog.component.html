@@ -1,0 +1,33 @@
+<div class="modal-backdrop" *ngIf="open" (click)="closed.emit()"></div>
+<section class="app-modal" *ngIf="open" role="dialog" aria-modal="true" aria-labelledby="expenseDialogTitle">
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="dialog-heading"><div><p class="section-kicker">記下一筆花費</p><h2 id="expenseDialogTitle">{{ expense ? '編輯支出' : '新增支出' }}</h2></div><button class="close-button" type="button" aria-label="關閉" (click)="closed.emit()">×</button></div>
+    <label>支出名稱 <span class="required-mark">*</span><input formControlName="title" maxlength="50" placeholder="例如：新幹線、晚餐、門票" /></label>
+    <small class="field-error" *ngIf="formSubmitted && form.controls.title.invalid">請輸入支出名稱。</small>
+    <div class="form-row"><div class="form-field"><label>金額 <span class="required-mark">*</span><input formControlName="amount" type="number" min="1" step="1" placeholder="3200" /></label><small class="field-error" *ngIf="formSubmitted && amountIsInvalid">請輸入大於 0 的金額。</small></div><div class="form-field"><label>幣別 <span class="required-mark">*</span><select formControlName="currency" (change)="onCurrencyChange()"><option value="JPY">日幣（¥）</option><option value="KRW">韓元（₩）</option><option value="USD">美金（$）</option><option value="CNY">人民幣（¥）</option><option value="TWD">台幣（NT$）</option></select></label></div></div>
+    <label *ngIf="isForeignCurrency">匯率 <span class="label-hint">1 {{ currencyLabel(form.controls.currency.value) }} = 幾台幣，可自行調整</span><input formControlName="exchangeRate" type="number" min="0.0001" step="0.0001" /></label>
+    <small class="field-hint" *ngIf="isForeignCurrency">已先帶入最新參考匯率，儲存時會把這筆帳固定換算成台幣。</small>
+    <small class="field-error" *ngIf="formSubmitted && isForeignCurrency && !form.controls.exchangeRate.value">請輸入記帳當下的匯率。</small>
+    <small class="conversion-preview" *ngIf="previewAmountTwd !== null">約 {{ formatTwd(previewAmountTwd) }}</small>
+    <label>分類 <span class="required-mark">*</span><select formControlName="category"><option value="">請選擇分類</option><option value="餐飲">🍜 餐飲</option><option value="交通">🚆 交通</option><option value="住宿">🏨 住宿</option><option value="門票">🎫 門票</option><option value="購物">🛍️ 購物</option><option value="其他">📝 其他</option></select></label>
+    <small class="field-error" *ngIf="formSubmitted && form.controls.category.invalid">請選擇支出分類。</small>
+    <div class="form-row"><div class="form-field"><label>誰先付 <span class="required-mark">*</span><select formControlName="payer" (change)="onPayerChange()"><option value="">請選擇付款人</option><option *ngFor="let member of members" [value]="member.uid">{{ member.displayName }}</option></select></label><small class="field-error" *ngIf="formSubmitted && form.controls.payer.invalid">請選擇付款人。</small></div><div class="form-field"><label>分攤方式 <span class="required-mark">*</span><select formControlName="split" (change)="onSplitChange()"><option value="">請選擇分攤方式</option><option value="half">參與者平均分攤</option><option value="payer">付款人自己負擔</option><option value="custom">自訂每人應付金額</option></select></label><small class="field-error" *ngIf="formSubmitted && form.controls.split.invalid">請選擇分攤方式。</small></div></div>
+    <div class="participant-picker" *ngIf="form.controls.split.value === 'half'">
+      <span class="participant-picker-title">分攤對象 <span class="required-mark">*</span></span>
+      <div class="participant-options"><label *ngFor="let member of members" class="participant-option"><input type="checkbox" [checked]="isParticipantSelected(member.uid)" (change)="toggleParticipant(member.uid)" /><span>{{ member.displayName }}</span></label></div>
+      <small class="field-error" *ngIf="formSubmitted && selectedParticipantIds.length === 0">至少選擇一位分攤對象。</small>
+    </div>
+    <div class="custom-split-panel" *ngIf="form.controls.split.value === 'custom'">
+      <span class="participant-picker-title">每人應付金額 <span class="required-mark">*</span></span>
+      <div class="custom-split-list"><label *ngFor="let member of members">{{ member.displayName }}<input type="number" min="0" step="1" [value]="customAmountFor(member.uid)" (input)="updateCustomAmount(member.uid, $any($event.target).value)" /></label></div>
+      <small class="custom-split-total">{{ customAmountSummary }}</small>
+      <small class="field-error" *ngIf="formSubmitted && customAmountsMismatch">每人應付金額合計必須等於總金額。</small>
+    </div>
+    <label class="link-toggle"><input formControlName="linkToItinerary" type="checkbox" (change)="onLinkToggle()" /><span><strong>和行程連動</strong><small>記帳後會回寫該行程的付款狀態與金額</small></span></label>
+    <div class="link-panel" *ngIf="linkingItinerary">
+      <div class="form-row"><div class="form-field"><label>選日期<select formControlName="date" (change)="onDateChange()"><option value="">請先選擇日期</option><option *ngFor="let day of trip?.days" [value]="day.date">{{ day.label }}</option></select></label><small class="field-error" *ngIf="formSubmitted && !form.controls.date.value">請選擇要連動的日期。</small></div><div class="form-field" *ngIf="form.controls.date.value"><label>選當日行程<select formControlName="linkedEventId"><option value="">請選擇行程</option><option *ngFor="let event of selectedDateEvents" [value]="event.id">{{ event.time }} · {{ event.title }}</option></select></label><small class="field-error" *ngIf="formSubmitted && !form.controls.linkedEventId.value">請選擇要連動的行程。</small></div></div>
+      <small class="field-hint" *ngIf="form.controls.date.value && selectedDateEvents.length === 0">這一天還沒有行程，請先回到行程頁加入安排。</small>
+    </div>
+    <div class="dialog-actions"><button class="secondary-button" type="button" (click)="closed.emit()">取消</button><button class="primary-button" type="submit">{{ expense ? '儲存修改' : '記下這筆' }}</button></div>
+  </form>
+</section>

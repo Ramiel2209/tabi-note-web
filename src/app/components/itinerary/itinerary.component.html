@@ -1,0 +1,94 @@
+<section class="trip-workspace" aria-labelledby="tripTitle" style="width: 100%; min-width: 0;">
+  <section class="page-heading" style="width: 100%; min-width: 0;">
+    <div class="trip-heading-copy">
+      <h1 id="tripTitle">{{ trip.name }}</h1>
+      <p class="trip-meta">{{ trip.startDate.slice(5).replace('-', '/') }} — {{ trip.endDate.slice(5).replace('-', '/') }} · 建立者：{{ trip.nickname || 'Google 使用者' }}</p>
+      <div class="collaborator-actions-row">
+        <div class="collaborator-summary" aria-label="一起去的旅伴">
+          <span class="collaborator-label">一起去的旅伴</span>
+          <span class="collaborator-chip" *ngFor="let member of collaborators">
+            <img *ngIf="member.photoURL" [src]="member.photoURL" alt="" />
+            <span *ngIf="!member.photoURL" class="collaborator-fallback" aria-hidden="true">{{ member.displayName.slice(0, 1) }}</span>
+            <span>{{ member.displayName }}</span>
+          </span>
+          <button class="collaborator-add" type="button" (click)="openInvite.emit()">＋ 邀請</button>
+        </div>
+        <button *ngIf="canDeleteTrip" class="danger-button trip-delete-button" type="button" (click)="deleteTrip.emit()">刪除旅程</button>
+      </div>
+    </div>
+    <div class="page-actions"><button class="trip-edit-trigger" type="button" (click)="editTrip.emit()">✎ 編輯旅程</button><button class="ledger-trigger" type="button" (click)="openLedger.emit()">📒 打開帳本</button></div>
+  </section>
+
+  <section class="trip-detail-strip" *ngIf="(trip.flights?.length ?? 0) > 0 || (trip.hotels?.length ?? 0) > 0" aria-label="旅程資訊">
+    <section class="trip-detail-group" *ngIf="(trip.flights?.length ?? 0) > 0" aria-label="航班資訊">
+      <p class="trip-detail-heading">✈️ 航班資訊</p>
+      <div class="trip-detail-list flight-list">
+        <article class="trip-detail-card" *ngFor="let flight of trip.flights">
+          <span class="trip-detail-icon" aria-hidden="true">✈️</span>
+          <div><strong>{{ flight.airline }} {{ flight.flightNumber }}</strong><small>{{ flight.departure }} → {{ flight.arrival }}</small><small>{{ flight.departureAt | date:'MM/dd HH:mm' }} · 抵達 {{ flight.arrivalAt | date:'MM/dd HH:mm' }}</small></div>
+        </article>
+      </div>
+    </section>
+    <section class="trip-detail-group" *ngIf="(trip.hotels?.length ?? 0) > 0" aria-label="飯店資訊">
+      <p class="trip-detail-heading">🏨 飯店資訊</p>
+      <div class="trip-detail-list hotel-list">
+        <article class="trip-detail-card" *ngFor="let hotel of trip.hotels">
+          <span class="trip-detail-icon" aria-hidden="true">🏨</span>
+          <div><a class="hotel-title" [href]="safeUrl(hotel.mapsUrl)" target="_blank" rel="noreferrer">{{ hotel.name }} ↗</a><small>{{ hotel.checkIn | date:'MM/dd' }} — {{ hotel.checkOut | date:'MM/dd' }}</small><small *ngIf="hotel.address">{{ hotel.address }}</small></div>
+        </article>
+      </div>
+    </section>
+  </section>
+
+  <nav class="day-tabs" aria-label="旅程日期">
+    <button class="day-tab" *ngFor="let day of trip.days" type="button" [class.is-active]="day.id === activeDay.id" (click)="daySelected.emit(day.id)">{{ day.label }}</button>
+  </nav>
+
+  <section class="panel itinerary-panel" aria-labelledby="itineraryHeading" (dragover)="allowOptionDrop($event)" (drop)="dropOption($event)">
+    <div class="panel-heading"><div><p class="section-kicker">今日安排</p><h2 id="itineraryHeading">{{ activeDay.title }}</h2></div><div class="panel-heading-actions"><span class="item-count">{{ sortedEvents.length }} 個安排</span><button class="secondary-button section-action-button" type="button" (click)="addEvent.emit()">＋ 加入行程</button></div></div>
+    <button class="day-note-editor" [class.has-note]="!!activeDay.note" type="button" (click)="editDayNote.emit()">
+      <span class="day-note-label">📝 每日 Note</span>
+      <span class="day-note-content">{{ activeDay.note || '點一下新增今天的 Note' }}</span>
+      <span class="day-note-arrow" aria-hidden="true">✎</span>
+    </button>
+    <div class="event-list" *ngIf="sortedEvents.length > 0; else emptyEvents">
+      <ng-container *ngFor="let event of sortedEvents; let index = index">
+        <article class="event-item transport-event-item" *ngIf="event.category === '交通'; else regularEvent">
+          <div class="event-time">{{ event.time }}<div class="event-dot"></div></div>
+          <div class="event-card transport-tip" role="button" tabindex="0" [attr.aria-label]="'編輯交通資訊：' + event.title" (click)="onTransportTap(event); $event.stopPropagation()" (keydown.enter)="editTransport.emit(event)" (keydown.space)="$event.preventDefault(); editTransport.emit(event)" (touchstart)="startTransportLongPress(event)" (touchend)="cancelTransportLongPress()" (touchcancel)="cancelTransportLongPress()" (touchmove)="cancelTransportLongPress()" (contextmenu)="openTransportContextMenu($event, event)">
+            <strong class="transport-tip-title">🚆 交通資訊</strong>
+            <p class="transport-tip-text">{{ event.title }}</p>
+            <div class="transport-tip-menu" *ngIf="transportMenuEventId === event.id" (click)="$event.stopPropagation()">
+              <button type="button" (click)="editTransportFromMenu(event)">編輯</button>
+              <button type="button" (click)="deleteTransportFromMenu(event)">刪除</button>
+            </div>
+          </div>
+        </article>
+        <ng-template #regularEvent>
+          <article class="event-item">
+            <div class="event-time">{{ event.time }}<div class="event-dot"></div></div>
+            <div class="event-card" role="button" tabindex="0" [attr.aria-label]="'編輯行程：' + event.title" (click)="editEvent.emit(event)" (keydown.enter)="editEvent.emit(event)" (keydown.space)="$event.preventDefault(); editEvent.emit(event)">
+              <span class="event-actions"><button type="button" (click)="$event.stopPropagation(); deleteEvent.emit(event.id)">刪除</button></span>
+              <a class="place-title" [href]="safeUrl(event.mapsUrl)" target="_blank" rel="noreferrer" (click)="$event.stopPropagation()">{{ event.title }} <span aria-hidden="true">↗</span></a>
+              <span class="event-creator">建立者：{{ event.createdBy || trip.nickname }}</span>
+              <span class="event-priority">{{ priorityLabel(event.priority) }}</span>
+              <div class="event-statuses" *ngIf="event.reservationStatus || event.paymentStatus || event.paymentAmount">
+                <span class="status-badge reservation-status" *ngIf="event.reservationStatus">{{ reservationLabel(event.reservationStatus) }}</span>
+                <span class="status-badge payment-status" *ngIf="event.paymentStatus">{{ paymentLabel(event.paymentStatus) }}</span>
+                <span class="status-badge payment-amount" *ngIf="event.paymentAmount">{{ formatPaymentAmount(event) }}</span>
+                <span class="status-badge payment-converted" *ngIf="event.paymentAmount && event.paymentCurrency !== 'TWD'">{{ formatOriginalPaymentAmount(event) }}</span>
+              </div>
+              <p class="event-note">{{ event.note || '尚未補充備註' }}</p>
+              <div class="event-meta"><span>{{ categoryIcon(event.category) }} {{ event.category }}</span></div>
+            </div>
+          </article>
+        </ng-template>
+        <button class="timeline-connector" *ngIf="index < sortedEvents.length - 1" [class.is-silent]="event.category === '交通' || sortedEvents[index + 1].category === '交通'" type="button" [disabled]="event.category === '交通' || sortedEvents[index + 1].category === '交通'" [attr.aria-label]="'在 ' + event.title + ' 和下一個行程之間加入交通資訊'" (click)="addTransport.emit(transportInitialValues(index))"><span *ngIf="event.category !== '交通' && sortedEvents[index + 1].category !== '交通'" aria-hidden="true">＋</span><small *ngIf="event.category !== '交通' && sortedEvents[index + 1].category !== '交通'">交通</small></button>
+      </ng-container>
+    </div>
+    <ng-template #emptyEvents>
+      <div class="empty-state"><span aria-hidden="true">🗻</span><strong>這天還沒有安排</strong><p>先放一個想去的地方吧！</p><button class="secondary-button" type="button" (click)="addEvent.emit()">加入第一個景點</button></div>
+    </ng-template>
+  </section>
+  <app-trip-options [options]="trip.options" (createOption)="createOption.emit()" (useOption)="optionSelected.emit($event)" (editOption)="editOption.emit($event)" (deleteOption)="deleteOption.emit($event)"></app-trip-options>
+</section>

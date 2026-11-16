@@ -1,0 +1,14 @@
+<div class="modal-backdrop" *ngIf="open" (click)="closed.emit()"></div>
+<section class="app-modal collaboration-modal" *ngIf="open" role="dialog" aria-modal="true" aria-labelledby="joinDialogTitle">
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="dialog-heading">
+      <div><p class="section-kicker">收到旅伴邀請</p><h2 id="joinDialogTitle">加入一趟旅程</h2></div>
+      <button class="close-button" type="button" aria-label="關閉" (click)="closed.emit()">×</button>
+    </div>
+    <p class="dialog-description">請輸入旅伴分享給你的 8 碼邀請碼，加入後就能一起編輯行程與帳本。</p>
+    <label>旅程邀請碼 <span class="required-mark">*</span><input formControlName="inviteCode" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="例如：K7M4P2Q8" /></label>
+    <small class="field-error" *ngIf="form.controls.inviteCode.touched && form.controls.inviteCode.hasError('required')">請輸入邀請碼。</small>
+    <small class="field-error" *ngIf="form.controls.inviteCode.touched && form.controls.inviteCode.hasError('pattern')">邀請碼需要是 8 碼英數字。</small>
+    <div class="dialog-actions"><button class="secondary-button" type="button" [disabled]="submitting" (click)="closed.emit()">取消</button><button class="primary-button" type="submit" [disabled]="submitting">{{ submitting ? '加入中…' : '加入旅程' }}</button></div>
+  </form>
+</section>

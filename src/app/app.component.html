@@ -1,0 +1,122 @@
+<div class="app-shell">
+  <app-topbar (menuToggle)="menuOpen = !menuOpen" (authError)="showToast($event)"></app-topbar>
+
+  <app-trip-sidebar
+    [trips]="state.trips"
+    [activeTripId]="state.activeTripId"
+    [open]="menuOpen"
+    (selectTrip)="selectTrip($event)"
+    (createTrip)="openTripDialog()"
+    (joinTrip)="openJoinTripDialog()"
+    (close)="menuOpen = false">
+  </app-trip-sidebar>
+
+  <main class="main-content">
+    <app-empty-trip *ngIf="!activeTrip" (createTrip)="openTripDialog()"></app-empty-trip>
+
+    <app-itinerary
+      *ngIf="activeTrip"
+      [trip]="activeTrip"
+      [activeDayId]="activeDayId"
+      [canDeleteTrip]="canDeleteActiveTrip"
+      (daySelected)="selectDay($event)"
+      (addEvent)="openEventDialog()"
+      (addTransport)="openTransportDialog($event)"
+      (editTrip)="openEditTrip()"
+      (openLedger)="openExpenseDrawer()"
+      (deleteEvent)="requestDeleteEvent($event)"
+      (editEvent)="openEditEvent($event)"
+      (editTransport)="openEditTransport($event)"
+      (deleteTransport)="requestDeleteEvent($event)"
+      (deleteTrip)="requestDeleteTrip()"
+      (openInvite)="openInviteDialog()"
+      (createOption)="openOptionDialog()"
+      (optionSelected)="openOptionInEventDialog($event)"
+      (optionDropped)="openOptionInEventDialog($event)"
+      (editOption)="openEditOption($event)"
+      (deleteOption)="requestDeleteOption($event)"
+      (editDayNote)="openDayNoteDialog()">
+    </app-itinerary>
+  </main>
+
+  <app-floating-actions
+    [disabled]="!activeTrip"
+    (addEvent)="openEventDialog()"
+    (openLedger)="openExpenseDrawer()">
+  </app-floating-actions>
+
+  <app-expense-drawer
+    [trip]="activeTrip"
+    [currentUserId]="currentUserId"
+    [open]="ledgerOpen"
+    (close)="ledgerOpen = false"
+    (addExpense)="openExpenseDialog()"
+    (editExpense)="openEditExpense($event)"
+    (editEvent)="openEditEvent($event)">
+  </app-expense-drawer>
+
+  <app-trip-dialog
+    [trip]="editingTrip"
+    [open]="tripDialogOpen"
+    [currentUserName]="currentUserName"
+    (closed)="closeTripDialog()"
+    (saved)="saveTrip($event)">
+  </app-trip-dialog>
+
+  <app-trip-invite-dialog
+    [open]="inviteDialogOpen"
+    [trip]="activeTrip"
+    (closed)="inviteDialogOpen = false"
+    (copied)="showInviteCopied($event)">
+  </app-trip-invite-dialog>
+
+  <app-join-trip-dialog
+    [open]="joinTripDialogOpen"
+    [submitting]="joinTripBusy"
+    (closed)="joinTripDialogOpen = false"
+    (saved)="joinTrip($event)">
+  </app-join-trip-dialog>
+
+  <app-event-dialog
+    [event]="editingEvent"
+    [initialValues]="eventInitialValues"
+    [transportOnly]="transportDialogOnly"
+    [open]="eventDialogOpen"
+    (closed)="closeEventDialog()"
+    (saved)="addEvent($event)">
+  </app-event-dialog>
+
+  <app-expense-dialog
+    [trip]="activeTrip"
+    [expense]="editingExpense"
+    [currentUserId]="currentUserId"
+    [currentUserName]="currentUserName"
+    [open]="expenseDialogOpen"
+    (closed)="closeExpenseDialog()"
+    (saved)="addExpense($event)">
+  </app-expense-dialog>
+
+  <app-trip-option-dialog
+    [open]="optionDialogOpen"
+    [editingOption]="editingOption"
+    (closed)="closeOptionDialog()"
+    (saved)="saveOption($event)">
+  </app-trip-option-dialog>
+
+  <app-day-note-dialog
+    [open]="dayNoteDialogOpen"
+    [note]="activeDayNote"
+    (closed)="closeDayNoteDialog()"
+    (saved)="saveDayNote($event)">
+  </app-day-note-dialog>
+
+  <app-confirm-dialog
+    [open]="confirmDialogOpen"
+    [title]="confirmTitle"
+    [message]="confirmMessage"
+    (closed)="closeConfirmDialog()"
+    (confirmed)="confirmDelete()">
+  </app-confirm-dialog>
+
+  <div class="toast" *ngIf="toastMessage" role="status" aria-live="polite">{{ toastMessage }}</div>
+</div>

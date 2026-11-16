@@ -1,0 +1,9 @@
+<div class="modal-backdrop" *ngIf="open" (click)="closed.emit()"></div>
+<section class="app-modal day-note-modal" *ngIf="open" role="dialog" aria-modal="true" aria-labelledby="dayNoteDialogTitle">
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="dialog-heading"><div><p class="section-kicker">今天的行程</p><h2 id="dayNoteDialogTitle">每日 Note</h2></div><button class="close-button" type="button" aria-label="關閉" (click)="closed.emit()">×</button></div>
+    <label>Note<textarea formControlName="note" rows="6" maxlength="500" placeholder="記下今天的提醒、心情或備註"></textarea></label>
+    <small class="field-error" *ngIf="form.controls.note.touched && form.controls.note.invalid">Note 最多 500 字。</small>
+    <div class="dialog-actions"><button class="secondary-button" type="button" (click)="closed.emit()">取消</button><button class="primary-button" type="submit">儲存 Note</button></div>
+  </form>
+</section>

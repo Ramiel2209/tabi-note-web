@@ -1,0 +1,8 @@
+<div class="modal-backdrop" *ngIf="open" (click)="closed.emit()"></div>
+<section class="app-modal confirm-modal" *ngIf="open" role="alertdialog" aria-modal="true" aria-labelledby="confirmDialogTitle" aria-describedby="confirmDialogMessage">
+  <div class="confirm-content">
+    <div class="dialog-heading"><div><p class="section-kicker">請確認一下</p><h2 id="confirmDialogTitle">{{ title }}</h2></div><button class="close-button" type="button" aria-label="關閉" (click)="closed.emit()">×</button></div>
+    <p id="confirmDialogMessage" class="confirm-message">{{ message }}</p>
+    <div class="dialog-actions"><button class="secondary-button" type="button" (click)="closed.emit()">先不要</button><button class="danger-solid-button" type="button" (click)="confirmed.emit()">{{ confirmLabel }}</button></div>
+  </div>
+</section>

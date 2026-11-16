@@ -1,0 +1,17 @@
+<header class="topbar">
+  <button class="menu-toggle" type="button" aria-label="開啟旅程選單" (click)="menuToggle.emit()">☰</button>
+  <a class="brand" href="#" aria-label="旅程規劃所首頁">
+    <span>旅程規劃所 <small>tabi note</small></span>
+  </a>
+  <span class="topbar-spacer"></span>
+  <div class="auth-area" *ngIf="user; else loginArea">
+    <img *ngIf="user.photoURL" class="auth-avatar" [src]="user.photoURL" alt="" />
+    <span class="auth-user-name">{{ user.displayName || user.email }}</span>
+    <button class="auth-button" type="button" (click)="signOut()">登出</button>
+  </div>
+  <ng-template #loginArea>
+    <button class="auth-button google-login-button" type="button" [disabled]="authBusy" (click)="signIn()">
+      {{ authBusy ? '登入中…' : '使用 Google 登入' }}
+    </button>
+  </ng-template>
+</header>

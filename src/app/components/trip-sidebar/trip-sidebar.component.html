@@ -1,0 +1,16 @@
+<button class="sidebar-backdrop" type="button" aria-label="關閉旅程選單" [hidden]="!open" (click)="close.emit()"></button>
+<aside class="sidebar" [class.is-open]="open" aria-label="旅程清單">
+  <div class="sidebar-heading">
+    <div><p class="eyebrow">我的旅程</p><h2>旅行小冊</h2></div>
+    <span class="sidebar-flower" aria-hidden="true">✿</span>
+  </div>
+  <div class="trip-list">
+    <div class="empty-trip-list" *ngIf="trips.length === 0">還沒有旅程。<br />先建立一本旅行小冊吧！</div>
+    <button class="trip-card" *ngFor="let trip of trips" type="button" [class.is-active]="trip.id === activeTripId" (click)="selectTrip.emit(trip.id)">
+      <span class="trip-icon" aria-hidden="true">{{ trip.icon }}</span>
+      <span><strong>{{ trip.name }}</strong><small>{{ trip.city }} · {{ formatDateRange(trip.startDate, trip.endDate) }}</small></span>
+    </button>
+  </div>
+  <button class="new-trip-button" type="button" (click)="createTrip.emit()">＋ 新增一趟旅程</button>
+  <button class="join-trip-button" type="button" (click)="joinTrip.emit()">⌕ 輸入邀請碼加入</button>
+</aside>

@@ -1,0 +1,25 @@
+<div class="modal-backdrop" *ngIf="open" (click)="closed.emit()"></div>
+<section class="app-modal" *ngIf="open" role="dialog" aria-modal="true" aria-labelledby="eventDialogTitle">
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="dialog-heading"><div><p class="section-kicker">{{ isTransportDialog ? '安排兩段行程之間的移動' : '放進今天的計畫' }}</p><h2 id="eventDialogTitle">{{ dialogTitle }}</h2></div><button class="close-button" type="button" aria-label="關閉" (click)="closed.emit()">×</button></div>
+    <ng-container *ngIf="isTransportDialog; else regularEventFields">
+      <label>交通資訊 <span class="required-mark">*</span><textarea formControlName="title" rows="5" maxlength="60" placeholder="例如：搭乘地鐵、從淺草站走到晴空塔、預約接駁車"></textarea></label>
+      <small class="field-error" *ngIf="form.controls.title.touched && form.controls.title.invalid">請輸入交通資訊。</small>
+    </ng-container>
+    <ng-template #regularEventFields>
+      <label>景點或安排名稱 <span class="required-mark">*</span><input formControlName="title" maxlength="60" placeholder="例如：淺草寺、吃壽司、回飯店休息" /></label>
+      <small class="field-error" *ngIf="form.controls.title.touched && form.controls.title.invalid">請輸入景點或安排名稱。</small>
+      <div class="form-row"><div class="form-field"><label>時間 <span class="required-mark">*</span><input formControlName="time" type="time" /></label><small class="field-error" *ngIf="form.controls.time.touched && form.controls.time.invalid">請填寫時間。</small></div><div class="form-field"><label>類型 <span class="required-mark">*</span><select formControlName="category"><option value="">請選擇類型</option><option value="景點">📍 景點</option><option value="餐廳">🍜 餐廳</option><option value="交通">🚆 交通</option><option value="住宿">🏨 住宿</option><option value="其他">📝 其他</option></select></label><small class="field-error" *ngIf="form.controls.category.touched && form.controls.category.invalid">請選擇類型。</small></div></div>
+      <fieldset class="priority-fieldset"><legend>想去程度 <span class="required-mark">*</span></legend><div class="priority-options"><label><input formControlName="priority" type="radio" value="must" /><span>🌟 超想去</span></label><label><input formControlName="priority" type="radio" value="if-time" /><span>🍵 有時間可去</span></label></div></fieldset>
+      <small class="field-error" *ngIf="form.controls.priority.touched && form.controls.priority.invalid">請選擇想去程度。</small>
+      <div class="form-row"><label>訂位狀態 <span class="label-hint">非必填</span><select formControlName="reservationStatus"><option value="">尚未設定</option><option value="booked">已訂位</option><option value="to-book">待訂位</option></select></label><label>付款狀態 <span class="label-hint">非必填</span><select formControlName="paymentStatus"><option value="">尚未設定</option><option value="paid">已付款</option><option value="unpaid">待付款</option></select></label></div>
+      <div class="form-row"><label>金額 <span class="label-hint">非必填，可和帳本連動</span><input formControlName="paymentAmount" type="number" min="0" step="1" placeholder="例如：1200" /></label><label>金額幣別 <span class="label-hint">非必填</span><select formControlName="paymentCurrency" (change)="onPaymentCurrencyChange()"><option value="JPY">日幣（¥）</option><option value="KRW">韓元（₩）</option><option value="USD">美金（$）</option><option value="CNY">人民幣（¥）</option><option value="TWD">台幣（NT$）</option></select></label></div>
+      <label *ngIf="paymentNeedsRate">付款匯率 <span class="label-hint">1 {{ currencyLabel(form.controls.paymentCurrency.value) }} = 幾台幣，可自行調整</span><input formControlName="paymentExchangeRate" type="number" min="0.0001" step="0.0001" /></label>
+      <small class="field-hint" *ngIf="paymentNeedsRate">已先帶入最新參考匯率，儲存時會換算成台幣。</small>
+      <small class="field-error" *ngIf="paymentNeedsRate && !form.controls.paymentExchangeRate.value">已付款的外幣金額請輸入匯率，才能計入台幣總支出。</small>
+      <label>備註<textarea formControlName="note" rows="3" maxlength="160" placeholder="想記下什麼？例如：先預約、預留排隊時間"></textarea></label>
+      <label>Google Maps 連結 <span class="label-hint">可留白，會自動用名稱搜尋</span><input formControlName="mapsUrl" type="text" inputmode="url" placeholder="https://maps.google.com/..." /></label>
+    </ng-template>
+    <div class="dialog-actions"><button class="secondary-button" type="button" (click)="closed.emit()">取消</button><button class="primary-button" type="submit">{{ submitLabel }}</button></div>
+  </form>
+</section>

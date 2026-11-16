@@ -1,0 +1,7 @@
+<div class="fab-zone">
+  <div class="fab-menu" *ngIf="menuOpen">
+    <button type="button" (click)="choose('event')"><span aria-hidden="true">📍</span> 加入行程</button>
+    <button type="button" (click)="choose('expense')"><span aria-hidden="true">🧾</span> 記帳／打開帳本</button>
+  </div>
+  <button class="fab" type="button" aria-label="新增內容" [attr.aria-expanded]="menuOpen" [disabled]="disabled" (click)="toggleMenu()">＋</button>
+</div>
