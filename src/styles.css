@@ -1289,6 +1289,7 @@ app-itinerary {
   z-index: 10;
   width: min(520px, calc(100% - 30px));
   max-height: calc(100vh - 30px);
+  overflow-x: hidden;
   overflow-y: auto;
   transform: translate(-50%, -50%);
   border: 1px solid var(--line);
@@ -1633,11 +1634,16 @@ app-itinerary {
   margin-top: 8px;
 }
 .priority-options label {
+  position: relative;
   display: block;
   margin: 0;
 }
 .priority-options input {
   position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
   opacity: 0;
   pointer-events: none;
 }
