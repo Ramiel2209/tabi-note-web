@@ -1340,6 +1340,20 @@ app-itinerary {
   color: var(--ink);
   font-size: 14px;
 }
+.app-modal input[type="time"],
+.app-modal input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 44px;
+  text-align: left;
+}
+.app-modal input[type="time"]::-webkit-date-and-time-value,
+.app-modal input[type="date"]::-webkit-date-and-time-value {
+  min-height: 1.4em;
+  text-align: left;
+}
 .app-modal input[formControlName="inviteCode"] {
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -1826,10 +1840,13 @@ app-itinerary {
     font-size: 11px;
     justify-self: end;
   }
-  .priority-options,
   .form-row {
     grid-template-columns: 1fr;
     gap: 0;
+  }
+  .priority-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
   .form-row > .form-field + .form-field {
     margin-top: 12px;
