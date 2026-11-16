@@ -1,9 +1,9 @@
-export type EventPriority = 'must' | 'if-time';
-export type ReservationStatus = 'booked' | 'to-book';
-export type PaymentStatus = 'paid' | 'unpaid';
-export type Currency = 'JPY' | 'KRW' | 'USD' | 'CNY' | 'TWD';
-export type ExpensePayer = '我' | '旅伴';
-export type ExpenseSplit = 'half' | 'payer' | 'custom';
+export type EventPriority = "must" | "if-time";
+export type ReservationStatus = "booked" | "to-book";
+export type PaymentStatus = "paid" | "unpaid";
+export type Currency = "JPY" | "KRW" | "USD" | "CNY" | "TWD";
+export type ExpensePayer = "我" | "旅伴";
+export type ExpenseSplit = "half" | "payer" | "custom";
 
 export interface TripEvent {
   id: string;
@@ -69,11 +69,22 @@ export interface Expense {
   linkedEventId?: string | null;
 }
 
+export const OPTION_KINDS = ["正餐", "甜點", "逛街", "景點"] as const;
+export type OptionKind = (typeof OPTION_KINDS)[number];
+export const OPTION_KIND_ICONS: Record<OptionKind, string> = {
+  正餐: "🍽️",
+  甜點: "🍰",
+  逛街: "🛍️",
+  景點: "📍",
+};
+
 export interface TripOption {
   id: string;
   title: string;
   note: string;
   mapsUrl: string;
+  kind?: OptionKind;
+  createdBy?: string;
 }
 
 export interface TripMember {
@@ -151,4 +162,5 @@ export interface CreateTripOptionInput {
   title: string;
   note: string;
   mapsUrl: string;
+  kind: OptionKind;
 }

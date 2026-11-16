@@ -1,14 +1,124 @@
 <section class="panel options-panel" aria-labelledby="optionsHeading">
-  <div class="panel-heading options-heading"><div><p class="section-kicker">先放進口袋</p><h2 id="optionsHeading">行程備選</h2><p class="options-intro">每天都會看到這份想去清單；拖到上方，或直接加入今天。</p></div><button class="secondary-button section-action-button" type="button" (click)="createOption.emit()">＋ 新增備選</button></div>
+  <div class="panel-heading options-heading">
+    <div>
+      <p class="section-kicker">先放進口袋</p>
+      <h2 id="optionsHeading">行程備選</h2>
+      <p class="options-intro">
+        每天都會看到這份想去清單；拖到上方，或直接加入今天。
+      </p>
+    </div>
+    <button
+      class="secondary-button section-action-button"
+      type="button"
+      (click)="createOption.emit()"
+    >
+      ＋ 新增備選
+    </button>
+  </div>
+  <div
+    class="option-filters"
+    *ngIf="options.length > 0"
+    role="group"
+    aria-label="篩選行程備選"
+  >
+    <div class="filter-row">
+      <button
+        class="filter-chip"
+        type="button"
+        [class.is-active]="filterKind === null"
+        [attr.aria-pressed]="filterKind === null"
+        (click)="filterKind = null"
+      >
+        全部
+      </button>
+      <button
+        class="filter-chip"
+        type="button"
+        *ngFor="let kind of kinds"
+        [class.is-active]="filterKind === kind"
+        [attr.aria-pressed]="filterKind === kind"
+        (click)="filterKind = kind"
+      >
+        {{ kindIcon(kind) }} {{ kind }}
+      </button>
+    </div>
+    <div class="filter-row" *ngIf="creators.length > 1">
+      <button
+        class="filter-chip"
+        type="button"
+        [class.is-active]="activeCreator === null"
+        [attr.aria-pressed]="activeCreator === null"
+        (click)="filterCreator = null"
+      >
+        所有人
+      </button>
+      <button
+        class="filter-chip"
+        type="button"
+        *ngFor="let name of creators"
+        [class.is-active]="activeCreator === name"
+        [attr.aria-pressed]="activeCreator === name"
+        (click)="filterCreator = name"
+      >
+        {{ name }}
+      </button>
+    </div>
+  </div>
   <div class="option-list" *ngIf="options.length > 0; else emptyOptions">
-    <article class="option-card" *ngFor="let option of options" draggable="true" tabindex="0" (click)="onOptionClick($event, option)" (keydown)="onOptionKeydown($event, option)" (dragstart)="onDragStart($event, option)">
+    <article
+      class="option-card"
+      *ngFor="let option of filteredOptions"
+      draggable="true"
+      tabindex="0"
+      (click)="onOptionClick($event, option)"
+      (keydown)="onOptionKeydown($event, option)"
+      (dragstart)="onDragStart($event, option)"
+    >
       <span class="drag-handle" aria-hidden="true">⠿</span>
-      <div class="option-copy"><a class="place-title" [href]="safeUrl(option.mapsUrl)" target="_blank" rel="noreferrer">{{ option.title }} <span aria-hidden="true">↗</span></a><p>{{ option.note || '還沒有備註' }}</p></div>
+      <div class="option-copy">
+        <a
+          class="place-title"
+          [href]="safeUrl(option.mapsUrl)"
+          target="_blank"
+          rel="noreferrer"
+          >{{ option.title }} <span aria-hidden="true">↗</span></a
+        >
+        <div class="option-tags" *ngIf="option.kind || option.createdBy">
+          <span class="option-tag option-kind" *ngIf="option.kind"
+            >{{ kindIcon(option.kind) }} {{ option.kind }}</span
+          >
+          <span class="option-tag option-creator" *ngIf="option.createdBy"
+            >建立者：{{ option.createdBy }}</span
+          >
+        </div>
+        <p>{{ option.note || "還沒有備註" }}</p>
+      </div>
       <div class="option-actions">
-        <button class="option-add-button" type="button" (click)="useOptionClick($event, option.id)">加入今天</button>
-        <button class="option-delete-button" type="button" aria-label="刪除備選" title="刪除備選" (click)="deleteOptionClick($event, option)">×</button>
+        <button
+          class="option-add-button"
+          type="button"
+          (click)="useOptionClick($event, option.id)"
+        >
+          加入今天
+        </button>
+        <button
+          class="option-delete-button"
+          type="button"
+          aria-label="刪除備選"
+          title="刪除備選"
+          (click)="deleteOptionClick($event, option)"
+        >
+          ×
+        </button>
       </div>
     </article>
+    <div class="options-empty" *ngIf="filteredOptions.length === 0">
+      這個標籤下還沒有備選。
+    </div>
   </div>
-  <ng-template #emptyOptions><div class="options-empty">把還沒決定的景點放在這裡，之後每天都能拖出來安排。</div></ng-template>
+  <ng-template #emptyOptions
+    ><div class="options-empty">
+      把還沒決定的景點放在這裡，之後每天都能拖出來安排。
+    </div></ng-template
+  >
 </section>

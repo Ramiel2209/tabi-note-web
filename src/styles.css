@@ -1180,6 +1180,57 @@ app-itinerary {
   font-size: 12px;
   line-height: 1.6;
 }
+.option-filters {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 13px;
+}
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.filter-chip {
+  padding: 5px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.filter-chip:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+.filter-chip.is-active {
+  border-color: var(--orange);
+  background: var(--orange-soft);
+  color: var(--orange);
+}
+.option-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+.option-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.option-kind {
+  background: var(--yellow-soft);
+  color: var(--ink);
+}
+.option-creator {
+  background: var(--paper-2);
+  color: var(--muted);
+}
 .day-note-editor {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;

@@ -1,11 +1,76 @@
 <div class="modal-backdrop" *ngIf="open" (click)="closed.emit()"></div>
-<section class="app-modal" *ngIf="open" role="dialog" aria-modal="true" aria-labelledby="optionDialogTitle">
+<section
+  class="app-modal"
+  *ngIf="open"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="optionDialogTitle"
+>
   <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-    <div class="dialog-heading"><div><p class="section-kicker">先記在清單裡</p><h2 id="optionDialogTitle">{{ editingOption ? '編輯行程備選' : '新增行程備選' }}</h2></div><button class="close-button" type="button" aria-label="關閉" (click)="closed.emit()">×</button></div>
-    <label>想去的地方<input formControlName="title" maxlength="60" placeholder="例如：鎌倉高校前、谷中銀座" /></label>
-    <small class="field-error" *ngIf="form.controls.title.touched && form.controls.title.invalid">請輸入備選標題。</small>
-    <label>備註<textarea formControlName="note" rows="3" maxlength="160" placeholder="想去的理由、營業時間、注意事項"></textarea></label>
-    <label>Google Maps 連結 <span class="label-hint">可留白，會自動用標題搜尋</span><input formControlName="mapsUrl" type="text" inputmode="url" placeholder="https://maps.google.com/..." /></label>
-    <div class="dialog-actions"><button class="secondary-button" type="button" (click)="closed.emit()">取消</button><button class="primary-button" type="submit">{{ editingOption ? '儲存修改' : '放進備選' }}</button></div>
+    <div class="dialog-heading">
+      <div>
+        <p class="section-kicker">先記在清單裡</p>
+        <h2 id="optionDialogTitle">
+          {{ editingOption ? "編輯行程備選" : "新增行程備選" }}
+        </h2>
+      </div>
+      <button
+        class="close-button"
+        type="button"
+        aria-label="關閉"
+        (click)="closed.emit()"
+      >
+        ×
+      </button>
+    </div>
+    <label
+      >想去的地方<input
+        formControlName="title"
+        maxlength="60"
+        placeholder="例如：鎌倉高校前、谷中銀座"
+    /></label>
+    <small
+      class="field-error"
+      *ngIf="form.controls.title.touched && form.controls.title.invalid"
+      >請輸入備選標題。</small
+    >
+    <fieldset class="priority-fieldset">
+      <legend>類型 <span class="required-mark">*</span></legend>
+      <div class="priority-options">
+        <label *ngFor="let kind of kinds"
+          ><input formControlName="kind" type="radio" [value]="kind" /><span
+            >{{ kindIcon(kind) }} {{ kind }}</span
+          ></label
+        >
+      </div>
+    </fieldset>
+    <small
+      class="field-error"
+      *ngIf="form.controls.kind.touched && form.controls.kind.invalid"
+      >請選擇類型。</small
+    >
+    <label
+      >備註<textarea
+        formControlName="note"
+        rows="3"
+        maxlength="160"
+        placeholder="想去的理由、營業時間、注意事項"
+      ></textarea>
+    </label>
+    <label
+      >Google Maps 連結 <span class="label-hint">可留白，會自動用標題搜尋</span
+      ><input
+        formControlName="mapsUrl"
+        type="text"
+        inputmode="url"
+        placeholder="https://maps.google.com/..."
+    /></label>
+    <div class="dialog-actions">
+      <button class="secondary-button" type="button" (click)="closed.emit()">
+        取消</button
+      ><button class="primary-button" type="submit">
+        {{ editingOption ? "儲存修改" : "放進備選" }}
+      </button>
+    </div>
   </form>
 </section>
