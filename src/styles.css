@@ -1183,7 +1183,7 @@ app-itinerary {
 .day-note-editor {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
+  align-items: start;
   gap: 9px;
   width: 100%;
   margin: 0 0 16px;
@@ -1202,15 +1202,16 @@ app-itinerary {
   color: var(--muted);
   font-size: 11px;
   font-weight: 700;
+  line-height: 1.6;
   white-space: nowrap;
 }
 .day-note-content {
   min-width: 0;
-  overflow: hidden;
   color: var(--muted);
   font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .day-note-editor.has-note .day-note-content {
   color: var(--ink);
