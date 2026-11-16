@@ -361,30 +361,41 @@ app-itinerary {
 }
 .collaborator-actions-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 10px;
   width: 100%;
   min-width: 0;
-  gap: 10px;
+  max-width: 100%;
 }
+
 .collaborator-summary {
-  display: flex;
-  flex: 1 1 auto;
+  display: flex; /* 要保留 */
+  flex: 1 1 0;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
+  align-items: center; /* 要保留 */
+  gap: 6px; /* 要保留 */
   min-width: 0;
-  margin-top: 12px;
+  margin-top: 12px; /* 要保留 */
 }
+
+.collaborator-actions-row > :not(.collaborator-summary) {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .collaborator-label {
   color: var(--muted);
   font-size: 11px;
   font-weight: 700;
 }
+
 .collaborator-chip {
-  display: inline-flex;
+  display: inline-flex; /* 以下都是原本的，要保留 */
   align-items: center;
   gap: 5px;
-  max-width: 155px;
+  max-width: 100%; /* 只有這行是新的（原本 155px） */
   padding: 4px 8px 4px 5px;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -394,6 +405,7 @@ app-itinerary {
   font-size: 11px;
   font-weight: 700;
 }
+
 .collaborator-chip img,
 .collaborator-fallback {
   display: inline-grid;
@@ -407,11 +419,13 @@ app-itinerary {
   color: var(--ink);
   font-size: 10px;
 }
+
 .collaborator-chip > span:last-child {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .collaborator-add {
   border: 1px dashed var(--orange);
   border-radius: 999px;
