@@ -29,6 +29,7 @@ import { TripDialogComponent } from "./components/trip-dialog/trip-dialog.compon
 import { TripInviteDialogComponent } from "./components/trip-invite-dialog/trip-invite-dialog.component";
 import { TripOptionDialogComponent } from "./components/trip-option-dialog/trip-option-dialog.component";
 import { TripSidebarComponent } from "./components/trip-sidebar/trip-sidebar.component";
+import { findDuplicateOption } from "./utils/place-matcher";
 
 const OPTION_KIND_TO_CATEGORY: Record<OptionKind, string> = {
   正餐: "餐廳",
@@ -75,6 +76,9 @@ export class AppComponent implements OnDestroy {
   confirmDialogOpen = false;
   confirmTitle = "";
   confirmMessage = "";
+  duplicateDialogOpen = false;
+  duplicateMessage = "";
+  private pendingOptionInput: CreateTripOptionInput | null = null;
   editingTrip: Trip | null = null;
   editingEvent: TripEvent | null = null;
   editingExpense: Expense | null = null;
@@ -360,6 +364,36 @@ export class AppComponent implements OnDestroy {
   }
 
   saveOption(input: CreateTripOptionInput): void {
+    const duplicate = findDuplicateOption(
+      input,
+      this.activeTrip?.options ?? [],
+      this.editingOption?.id
+    );
+    if (duplicate) {
+      this.pendingOptionInput = input;
+      this.duplicateMessage = `「${
+        duplicate.title
+      }」已經在行程備選裡了，看起來是同一個地點。確定還要${
+        this.editingOption ? "儲存" : "新增"
+      }嗎？`;
+      this.duplicateDialogOpen = true;
+      return;
+    }
+    this.commitOption(input);
+  }
+
+  confirmDuplicateOption(): void {
+    const input = this.pendingOptionInput;
+    this.closeDuplicateDialog();
+    if (input) this.commitOption(input);
+  }
+
+  closeDuplicateDialog(): void {
+    this.duplicateDialogOpen = false;
+    this.pendingOptionInput = null;
+  }
+
+  private commitOption(input: CreateTripOptionInput): void {
     if (this.editingOption) {
       this.store.updateOption(this.editingOption.id, input);
       this.showToast("備選已更新");
@@ -413,6 +447,7 @@ export class AppComponent implements OnDestroy {
 
   @HostListener("document:keydown.escape")
   closeTopLayer(): void {
+    if (this.duplicateDialogOpen) return this.closeDuplicateDialog();
     if (this.confirmDialogOpen) return this.closeConfirmDialog();
     if (this.joinTripDialogOpen) return void (this.joinTripDialogOpen = false);
     if (this.inviteDialogOpen) return void (this.inviteDialogOpen = false);
