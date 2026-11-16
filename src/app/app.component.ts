@@ -33,7 +33,7 @@ import { findDuplicateOption } from "./utils/place-matcher";
 
 const OPTION_KIND_TO_CATEGORY: Record<OptionKind, string> = {
   正餐: "餐廳",
-  甜點: "餐廳",
+  輕食: "餐廳",
   逛街: "其他",
   景點: "景點",
 };

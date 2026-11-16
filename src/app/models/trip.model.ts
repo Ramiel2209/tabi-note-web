@@ -69,11 +69,11 @@ export interface Expense {
   linkedEventId?: string | null;
 }
 
-export const OPTION_KINDS = ["正餐", "甜點", "逛街", "景點"] as const;
+export const OPTION_KINDS = ["正餐", "輕食", "逛街", "景點"] as const;
 export type OptionKind = (typeof OPTION_KINDS)[number];
 export const OPTION_KIND_ICONS: Record<OptionKind, string> = {
   正餐: "🍽️",
-  甜點: "🍰",
+  輕食: "🍰",
   逛街: "🛍️",
   景點: "📍",
 };
