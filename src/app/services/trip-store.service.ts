@@ -217,6 +217,21 @@ export class TripStoreService implements OnDestroy {
     this.replaceTrip(updatedTrip);
   }
 
+  updateSegmentNote(eventId: string, note: string): void {
+    const trip = this.activeTrip;
+    if (!trip) return;
+    const updatedTrip = {
+      ...trip,
+      days: trip.days.map((day) => ({
+        ...day,
+        events: day.events.map((event) =>
+          event.id === eventId ? { ...event, segmentNote: note.trim() } : event
+        ),
+      })),
+    };
+    this.replaceTrip(updatedTrip);
+  }
+
   updateEvent(eventId: string, eventInput: CreateEventInput): void {
     const trip = this.activeTrip;
     if (!trip) return;

@@ -20,6 +20,8 @@ export interface TripEvent {
   paymentCurrency?: Currency | null;
   paymentExchangeRate?: number | null;
   paymentAmountTwd?: number | null;
+  /** 這個行程「之後、下一個行程之前」的小備註（例如交通資訊）。空字串代表沒有。 */
+  segmentNote?: string;
 }
 
 export interface TripDay {

@@ -692,14 +692,20 @@ app-itinerary {
 .timeline-connector {
   position: relative;
   display: grid;
-  width: 55px;
+  grid-template-columns: 55px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  width: 100%;
   min-height: 36px;
-  place-items: center;
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--muted);
+  text-align: left;
   cursor: pointer;
+}
+.timeline-connector:not(.has-note) {
+  width: 55px;
 }
 .timeline-connector::before {
   content: "";
@@ -710,14 +716,17 @@ app-itinerary {
   width: 1px;
   background: var(--line);
 }
-.timeline-connector span,
-.timeline-connector small {
+.timeline-connector:hover::before,
+.timeline-connector:focus-visible::before {
+  background: var(--orange);
+}
+.connector-plus {
   position: relative;
   z-index: 1;
   display: grid;
+  grid-column: 1;
+  justify-self: center;
   place-items: center;
-}
-.timeline-connector span {
   width: 22px;
   height: 22px;
   border: 1px solid var(--line);
@@ -726,26 +735,24 @@ app-itinerary {
   color: var(--orange);
   font-size: 16px;
 }
-.timeline-connector small {
-  margin-top: 2px;
-  padding: 1px 4px;
-  border-radius: 4px;
-  background: var(--paper);
-  font-size: 9px;
-  opacity: 0;
+.connector-text {
+  position: relative;
+  z-index: 1;
+  grid-column: 2;
+  min-width: 0;
+  padding: 8px 2px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
-.timeline-connector:hover span,
-.timeline-connector:focus-visible span,
-.timeline-connector:hover small,
-.timeline-connector:focus-visible small {
-  opacity: 1;
+.timeline-connector:hover .connector-text,
+.timeline-connector:focus-visible .connector-text {
+  color: var(--ink);
 }
 .timeline-connector:focus-visible {
   outline: 0;
-}
-.timeline-connector.is-silent {
-  cursor: default;
-  pointer-events: none;
 }
 .event-card {
   position: relative;
@@ -756,46 +763,6 @@ app-itinerary {
   border-radius: 13px 13px 16px 13px;
   background: var(--paper);
   cursor: pointer;
-}
-.transport-tip {
-  border-style: dashed;
-  border-color: var(--yellow);
-  background: var(--yellow-soft);
-  touch-action: manipulation;
-  user-select: none;
-}
-.transport-tip-title {
-  display: block;
-  margin-bottom: 5px;
-  color: var(--orange);
-  font-size: 12px;
-}
-.transport-tip-text {
-  margin: 0;
-  color: var(--ink);
-  font-size: 13px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-}
-.transport-tip-menu {
-  display: flex;
-  gap: 7px;
-  margin-top: 11px;
-  padding-top: 9px;
-  border-top: 1px dashed color-mix(in srgb, var(--yellow) 72%, var(--line));
-}
-.transport-tip-menu button {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 6px 10px;
-  background: var(--paper);
-  color: var(--indigo);
-  font-size: 11px;
-  font-weight: 700;
-}
-.transport-tip-menu button:hover {
-  border-color: var(--orange);
-  color: var(--orange);
 }
 .event-card:hover {
   border-color: color-mix(in srgb, var(--orange) 45%, var(--line));
@@ -1927,6 +1894,10 @@ app-itinerary {
     left: 22px;
   }
   .timeline-connector {
+    grid-template-columns: 45px minmax(0, 1fr);
+    gap: 8px;
+  }
+  .timeline-connector:not(.has-note) {
     width: 45px;
   }
   .timeline-connector::before {

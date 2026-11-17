@@ -28,13 +28,10 @@
       [canDeleteTrip]="canDeleteActiveTrip"
       (daySelected)="selectDay($event)"
       (addEvent)="openEventDialog()"
-      (addTransport)="openTransportDialog($event)"
       (editTrip)="openEditTrip()"
       (openLedger)="openExpenseDrawer()"
       (deleteEvent)="requestDeleteEvent($event)"
       (editEvent)="openEditEvent($event)"
-      (editTransport)="openEditTransport($event)"
-      (deleteTransport)="requestDeleteEvent($event)"
       (deleteTrip)="requestDeleteTrip()"
       (openInvite)="openInviteDialog()"
       (createOption)="openOptionDialog()"
@@ -43,6 +40,7 @@
       (editOption)="openEditOption($event)"
       (deleteOption)="requestDeleteOption($event)"
       (editDayNote)="openDayNoteDialog()"
+      (editSegmentNote)="openSegmentNoteDialog($event)"
     >
     </app-itinerary>
   </main>
@@ -93,7 +91,6 @@
   <app-event-dialog
     [event]="editingEvent"
     [initialValues]="eventInitialValues"
-    [transportOnly]="transportDialogOnly"
     [open]="eventDialogOpen"
     (closed)="closeEventDialog()"
     (saved)="addEvent($event)"
@@ -135,6 +132,21 @@
     [note]="activeDayNote"
     (closed)="closeDayNoteDialog()"
     (saved)="saveDayNote($event)"
+  >
+  </app-day-note-dialog>
+
+  <app-day-note-dialog
+    [open]="segmentNoteDialogOpen"
+    [note]="segmentNoteText"
+    kicker="行程之間"
+    heading="交通資訊／備註"
+    label="備註"
+    placeholder="例如：搭地鐵銀座線 20 分鐘、步行 5 分鐘（清空後儲存即可移除）"
+    submitLabel="儲存備註"
+    [maxLength]="200"
+    [rows]="4"
+    (closed)="closeSegmentNoteDialog()"
+    (saved)="saveSegmentNote($event)"
   >
   </app-day-note-dialog>
 

@@ -67,7 +67,9 @@ export class AppComponent implements OnDestroy {
   tripDialogOpen = false;
   eventDialogOpen = false;
   dayNoteDialogOpen = false;
-  transportDialogOnly = false;
+  segmentNoteDialogOpen = false;
+  segmentNoteText = "";
+  private editingSegmentEventId: string | null = null;
   expenseDialogOpen = false;
   optionDialogOpen = false;
   inviteDialogOpen = false;
@@ -182,17 +184,13 @@ export class AppComponent implements OnDestroy {
     const optionId = this.pendingOptionId;
     if (this.editingEvent) {
       this.store.updateEvent(this.editingEvent.id, input);
-      this.showToast(
-        this.transportDialogOnly ? "交通資訊已更新！" : "行程已更新！"
-      );
+      this.showToast("行程已更新！");
     } else {
       this.store.addEvent(input, optionId);
       if (optionId) {
         this.showToast("行程已加入，備選已自動移除！");
       } else {
-        this.showToast(
-          this.transportDialogOnly ? "交通資訊已加入！" : "行程已加入！"
-        );
+        this.showToast("行程已加入！");
       }
     }
     this.closeEventDialog();
@@ -204,11 +202,10 @@ export class AppComponent implements OnDestroy {
       .find((candidate) => candidate.id === eventId);
     if (!event) return;
     this.pendingDelete = { type: "event", id: eventId };
-    const isTransport = event.category === "交通";
-    this.confirmTitle = isTransport ? "刪除這段交通資訊？" : "刪除這個行程？";
-    this.confirmMessage = isTransport
-      ? `「${event.title}」會從兩個行程之間移除。`
-      : `「${event.title}」會從這趟旅程移除，已連動的帳本紀錄不會被刪除。`;
+    this.confirmTitle = "刪除這個行程？";
+    this.confirmMessage =
+      `「${event.title}」會從這趟旅程移除，已連動的帳本紀錄不會被刪除。` +
+      (event.segmentNote ? "它下方的備註也會一併移除。" : "");
     this.confirmDialogOpen = true;
   }
 
@@ -232,19 +229,6 @@ export class AppComponent implements OnDestroy {
     this.editingEvent = null;
     this.pendingOptionId = null;
     this.eventInitialValues = null;
-    this.transportDialogOnly = false;
-    this.eventDialogOpen = true;
-  }
-
-  openTransportDialog(initialValues: Partial<CreateEventInput>): void {
-    if (!this.activeTrip) {
-      this.showToast("請先建立一趟旅程");
-      return;
-    }
-    this.editingEvent = null;
-    this.pendingOptionId = null;
-    this.eventInitialValues = initialValues;
-    this.transportDialogOnly = true;
     this.eventDialogOpen = true;
   }
 
@@ -252,15 +236,6 @@ export class AppComponent implements OnDestroy {
     this.editingEvent = event;
     this.pendingOptionId = null;
     this.eventInitialValues = null;
-    this.transportDialogOnly = false;
-    this.eventDialogOpen = true;
-  }
-
-  openEditTransport(event: TripEvent): void {
-    this.editingEvent = event;
-    this.pendingOptionId = null;
-    this.eventInitialValues = null;
-    this.transportDialogOnly = true;
     this.eventDialogOpen = true;
   }
 
@@ -279,7 +254,6 @@ export class AppComponent implements OnDestroy {
         ? { category: OPTION_KIND_TO_CATEGORY[option.kind] }
         : {}),
     };
-    this.transportDialogOnly = false;
     this.eventDialogOpen = true;
   }
 
@@ -287,7 +261,6 @@ export class AppComponent implements OnDestroy {
     this.eventDialogOpen = false;
     this.editingEvent = null;
     this.eventInitialValues = null;
-    this.transportDialogOnly = false;
     this.pendingOptionId = null;
   }
 
@@ -326,6 +299,26 @@ export class AppComponent implements OnDestroy {
 
   closeDayNoteDialog(): void {
     this.dayNoteDialogOpen = false;
+  }
+
+  openSegmentNoteDialog(event: TripEvent): void {
+    this.editingSegmentEventId = event.id;
+    this.segmentNoteText = event.segmentNote ?? "";
+    this.segmentNoteDialogOpen = true;
+  }
+
+  saveSegmentNote(note: string): void {
+    const eventId = this.editingSegmentEventId;
+    if (eventId) {
+      this.store.updateSegmentNote(eventId, note);
+      this.showToast(note.trim() ? "備註已儲存" : "備註已移除");
+    }
+    this.closeSegmentNoteDialog();
+  }
+
+  closeSegmentNoteDialog(): void {
+    this.segmentNoteDialogOpen = false;
+    this.editingSegmentEventId = null;
   }
 
   openInviteDialog(): void {
@@ -454,6 +447,7 @@ export class AppComponent implements OnDestroy {
     if (this.eventDialogOpen) return this.closeEventDialog();
     if (this.expenseDialogOpen) return this.closeExpenseDialog();
     if (this.optionDialogOpen) return this.closeOptionDialog();
+    if (this.segmentNoteDialogOpen) return this.closeSegmentNoteDialog();
     if (this.dayNoteDialogOpen) return this.closeDayNoteDialog();
     if (this.tripDialogOpen) return this.closeTripDialog();
     if (this.ledgerOpen) return void (this.ledgerOpen = false);
