@@ -281,6 +281,7 @@ export class TripStoreService implements OnDestroy {
       payerId: expenseInput.payerId ?? null,
       participantIds: expenseInput.participantIds ?? [],
       linkedEventId,
+      settled: Boolean(expenseInput.settled),
     };
     const days = this.updateLinkedEventPayment(trip.days, null, expense);
     this.replaceTrip({ ...trip, days, expenses: [...trip.expenses, expense] });
@@ -301,6 +302,7 @@ export class TripStoreService implements OnDestroy {
       payerId: expenseInput.payerId ?? null,
       participantIds: expenseInput.participantIds ?? [],
       linkedEventId: expenseInput.linkedEventId ?? null,
+      settled: Boolean(expenseInput.settled),
     };
     const days = this.updateLinkedEventPayment(
       trip.days,
@@ -311,6 +313,17 @@ export class TripStoreService implements OnDestroy {
       candidate.id === expenseId ? expense : candidate
     );
     this.replaceTrip({ ...trip, days, expenses });
+  }
+
+  /** 切換某筆支出的「已結清」狀態（左滑按鈕用），不動其他欄位、也不回寫行程。 */
+  setExpenseSettled(expenseId: string, settled: boolean): void {
+    const trip = this.activeTrip;
+    if (!trip || !trip.expenses.some((expense) => expense.id === expenseId))
+      return;
+    const expenses = trip.expenses.map((expense) =>
+      expense.id === expenseId ? { ...expense, settled } : expense
+    );
+    this.replaceTrip({ ...trip, expenses });
   }
 
   addOption(input: CreateTripOptionInput): void {

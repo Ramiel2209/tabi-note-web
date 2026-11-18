@@ -69,6 +69,8 @@ export interface Expense {
   exchangeRate?: number | null;
   amountTwd?: number | null;
   linkedEventId?: string | null;
+  /** 已結清：不再列入分帳結算，但仍計入總支出 */
+  settled?: boolean;
 }
 
 export const OPTION_KINDS = ["正餐", "輕食", "逛街", "景點"] as const;
@@ -158,6 +160,7 @@ export interface CreateExpenseInput {
   amountTwd: number;
   date?: string;
   linkedEventId?: string | null;
+  settled?: boolean;
 }
 
 export interface CreateTripOptionInput {

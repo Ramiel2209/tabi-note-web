@@ -1,16 +1,149 @@
 <div class="drawer-backdrop" [hidden]="!open" (click)="close.emit()"></div>
-<aside class="expense-drawer" [class.is-open]="open" [attr.aria-hidden]="!open" aria-labelledby="expenseDrawerTitle">
-  <div class="drawer-heading"><div><p class="section-kicker">一起記一下</p><h2 id="expenseDrawerTitle">旅費小帳本</h2></div><button class="close-button" type="button" aria-label="關閉帳本" (click)="close.emit()">×</button></div>
-  <div class="budget-summary"><span>目前總支出</span><strong>{{ formatMoney(total) }}</strong><small>{{ summaryText }}</small></div>
-  <section class="settlement-section" *ngIf="expenses.length > 0" aria-labelledby="settlementTitle">
-    <div class="settlement-heading"><strong id="settlementTitle">分帳概況</strong><span>{{ members.length }} 人</span></div>
-    <div class="settlement-row" *ngFor="let settlement of settlements"><span>{{ settlement.member.displayName }}</span><strong [class.is-receivable]="settlement.balance > 0" [class.is-payable]="settlement.balance < 0">{{ settlementDescription(settlement.balance) }}</strong></div>
+<aside
+  class="expense-drawer"
+  [class.is-open]="open"
+  [attr.aria-hidden]="!open"
+  aria-labelledby="expenseDrawerTitle"
+>
+  <div class="drawer-heading">
+    <div>
+      <p class="section-kicker">一起記一下</p>
+      <h2 id="expenseDrawerTitle">旅費小帳本</h2>
+    </div>
+    <button
+      class="close-button"
+      type="button"
+      aria-label="關閉帳本"
+      (click)="close.emit()"
+    >
+      ×
+    </button>
+  </div>
+  <div class="budget-summary">
+    <span>目前總支出（我的）</span><strong>{{ formatMoney(myTotal) }}</strong
+    ><small>{{ summaryText }}</small>
+  </div>
+  <section
+    class="settlement-section"
+    *ngIf="expenses.length > 0"
+    aria-labelledby="settlementTitle"
+  >
+    <div class="settlement-heading">
+      <strong id="settlementTitle">分帳概況</strong
+      ><span>{{ members.length }} 人</span>
+    </div>
+    <div class="settlement-row" *ngFor="let settlement of settlements">
+      <span>{{ settlement.member.displayName }}</span
+      ><strong
+        [class.is-receivable]="settlement.balance > 0"
+        [class.is-payable]="settlement.balance < 0"
+        >{{ settlementDescription(settlement.balance) }}</strong
+      >
+    </div>
   </section>
   <div class="drawer-count">{{ recordCount }} 筆</div>
   <div class="expense-list" *ngIf="recordCount > 0; else emptyExpenses">
-    <div class="expense-item is-editable" *ngFor="let expense of expenses" role="button" tabindex="0" (click)="editExpense.emit(expense)" (keydown.enter)="editExpense.emit(expense)" (keydown.space)="$event.preventDefault(); editExpense.emit(expense)" [attr.aria-label]="'編輯支出：' + expense.title"><div class="expense-label"><span class="expense-icon" aria-hidden="true">{{ categoryIcon(expense.category) }}</span><span><strong>{{ expense.title }}</strong><small>{{ payerName(expense) }}先付 · {{ splitDescription(expense) }} · {{ formatDate(expense.date) }}<span *ngIf="linkedEventTitle(expense)"> · 連動：{{ linkedEventTitle(expense) }}</span></small></span></div><span class="expense-amount"><strong>{{ formatMoney(amountTwd(expense)) }}</strong><small *ngIf="expense.currency && expense.currency !== 'TWD'">{{ formatOriginalMoney(expense.amount, expense.currency) }}</small></span></div>
-    <div class="expense-item is-editable" *ngFor="let event of paidEvents" role="button" tabindex="0" (click)="editEvent.emit(event)" (keydown.enter)="editEvent.emit(event)" (keydown.space)="$event.preventDefault(); editEvent.emit(event)" [attr.aria-label]="'編輯已付款行程：' + event.title"><div class="expense-label"><span class="expense-icon" aria-hidden="true">💳</span><span><strong>{{ event.title }}</strong><small>行程已付款 · 已計入總支出</small></span></div><span class="expense-amount"><strong>{{ formatMoney(eventAmountTwd(event)) }}</strong><small *ngIf="event.paymentCurrency && event.paymentCurrency !== 'TWD'">{{ formatEventMoney(event) }}</small></span></div>
+    <div
+      class="expense-swipe"
+      *ngFor="let expense of expenses"
+      [class.is-settled]="expense.settled"
+    >
+      <button
+        class="swipe-action"
+        type="button"
+        [class.is-restore]="expense.settled"
+        [attr.tabindex]="openId === expense.id ? 0 : -1"
+        [attr.aria-hidden]="openId !== expense.id"
+        (click)="onToggleSettled(expense)"
+      >
+        {{ expense.settled ? "加回分帳" : "已結清" }}
+      </button>
+      <div
+        class="expense-item is-editable"
+        [class.is-dragging]="dragId === expense.id"
+        [style.transform]="itemTransform(expense)"
+        role="button"
+        tabindex="0"
+        (pointerdown)="onPointerDown($event, expense)"
+        (pointermove)="onPointerMove($event, expense)"
+        (pointerup)="onPointerEnd(expense)"
+        (pointercancel)="onPointerEnd(expense)"
+        (click)="onItemClick(expense)"
+        (keydown.enter)="editExpense.emit(expense)"
+        (keydown.space)="$event.preventDefault(); editExpense.emit(expense)"
+        [attr.aria-label]="
+          '編輯支出：' + expense.title + (expense.settled ? '（已結清）' : '')
+        "
+      >
+        <div class="expense-label">
+          <span class="expense-icon" aria-hidden="true">{{
+            categoryIcon(expense.category)
+          }}</span>
+          <span>
+            <span class="expense-title-row"
+              ><strong>{{ expense.title }}</strong
+              ><span class="settled-badge" *ngIf="expense.settled"
+                >已結清</span
+              ></span
+            >
+            <small
+              >{{ payerName(expense) }}先付 · {{ splitDescription(expense) }} ·
+              {{ formatDate(expense.date)
+              }}<span *ngIf="linkedEventTitle(expense)">
+                · 連動：{{ linkedEventTitle(expense) }}</span
+              ></small
+            >
+          </span>
+        </div>
+        <span class="expense-amount">
+          <strong>{{ formatMoney(amountTwd(expense)) }}</strong>
+          <small
+            class="expense-per-person"
+            *ngIf="perPersonTwd(expense) !== null"
+            >（{{ formatMoney(perPersonTwd(expense)!) }}/人）</small
+          >
+          <small *ngIf="expense.currency && expense.currency !== 'TWD'">{{
+            formatOriginalMoney(expense.amount, expense.currency)
+          }}</small>
+        </span>
+      </div>
+    </div>
+    <div
+      class="expense-item is-editable"
+      *ngFor="let event of paidEvents"
+      role="button"
+      tabindex="0"
+      (click)="editEvent.emit(event)"
+      (keydown.enter)="editEvent.emit(event)"
+      (keydown.space)="$event.preventDefault(); editEvent.emit(event)"
+      [attr.aria-label]="'編輯已付款行程：' + event.title"
+    >
+      <div class="expense-label">
+        <span class="expense-icon" aria-hidden="true">💳</span
+        ><span
+          ><strong>{{ event.title }}</strong
+          ><small>行程已付款 · 已計入總支出</small></span
+        >
+      </div>
+      <span class="expense-amount"
+        ><strong>{{ formatMoney(eventAmountTwd(event)) }}</strong
+        ><small
+          *ngIf="event.paymentCurrency && event.paymentCurrency !== 'TWD'"
+          >{{ formatEventMoney(event) }}</small
+        ></span
+      >
+    </div>
   </div>
-  <ng-template #emptyExpenses><div class="expense-empty">打開帳本後，從第一筆支出開始記吧。</div></ng-template>
-  <button class="primary-button full-button" type="button" (click)="addExpense.emit()">＋ 新增一筆支出</button>
+  <ng-template #emptyExpenses
+    ><div class="expense-empty">
+      打開帳本後，從第一筆支出開始記吧。
+    </div></ng-template
+  >
+  <button
+    class="primary-button full-button"
+    type="button"
+    (click)="addExpense.emit()"
+  >
+    ＋ 新增一筆支出
+  </button>
 </aside>
