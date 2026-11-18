@@ -44,69 +44,47 @@
   <div class="drawer-count">{{ recordCount }} 筆</div>
   <div class="expense-list" *ngIf="recordCount > 0; else emptyExpenses">
     <div
-      class="expense-swipe"
+      class="expense-item is-editable"
       *ngFor="let expense of expenses"
       [class.is-settled]="expense.settled"
+      role="button"
+      tabindex="0"
+      (click)="editExpense.emit(expense)"
+      (keydown.enter)="editExpense.emit(expense)"
+      (keydown.space)="$event.preventDefault(); editExpense.emit(expense)"
+      [attr.aria-label]="
+        '編輯支出：' + expense.title + (expense.settled ? '（已結清）' : '')
+      "
     >
-      <button
-        class="swipe-action"
-        type="button"
-        [class.is-restore]="expense.settled"
-        [attr.tabindex]="openId === expense.id ? 0 : -1"
-        [attr.aria-hidden]="openId !== expense.id"
-        (click)="onToggleSettled(expense)"
-      >
-        {{ expense.settled ? "加回分帳" : "已結清" }}
-      </button>
-      <div
-        class="expense-item is-editable"
-        [class.is-dragging]="dragId === expense.id"
-        [style.transform]="itemTransform(expense)"
-        role="button"
-        tabindex="0"
-        (pointerdown)="onPointerDown($event, expense)"
-        (pointermove)="onPointerMove($event, expense)"
-        (pointerup)="onPointerEnd(expense)"
-        (pointercancel)="onPointerEnd(expense)"
-        (click)="onItemClick(expense)"
-        (keydown.enter)="editExpense.emit(expense)"
-        (keydown.space)="$event.preventDefault(); editExpense.emit(expense)"
-        [attr.aria-label]="
-          '編輯支出：' + expense.title + (expense.settled ? '（已結清）' : '')
-        "
-      >
-        <div class="expense-label">
-          <span class="expense-icon" aria-hidden="true">{{
-            categoryIcon(expense.category)
-          }}</span>
-          <span>
-            <span class="expense-title-row"
-              ><strong>{{ expense.title }}</strong
-              ><span class="settled-badge" *ngIf="expense.settled"
-                >已結清</span
-              ></span
-            >
-            <small
-              >{{ payerName(expense) }}先付 · {{ splitDescription(expense) }} ·
-              {{ formatDate(expense.date)
-              }}<span *ngIf="linkedEventTitle(expense)">
-                · 連動：{{ linkedEventTitle(expense) }}</span
-              ></small
-            >
-          </span>
-        </div>
-        <span class="expense-amount">
-          <strong>{{ formatMoney(amountTwd(expense)) }}</strong>
-          <small
-            class="expense-per-person"
-            *ngIf="perPersonTwd(expense) !== null"
-            >（{{ formatMoney(perPersonTwd(expense)!) }}/人）</small
+      <div class="expense-label">
+        <span class="expense-icon" aria-hidden="true">{{
+          categoryIcon(expense.category)
+        }}</span>
+        <span>
+          <span class="expense-title-row"
+            ><strong>{{ expense.title }}</strong
+            ><span class="settled-badge" *ngIf="expense.settled"
+              >已結清</span
+            ></span
           >
-          <small *ngIf="expense.currency && expense.currency !== 'TWD'">{{
-            formatOriginalMoney(expense.amount, expense.currency)
-          }}</small>
+          <small
+            >{{ payerName(expense) }}先付 · {{ splitDescription(expense) }} ·
+            {{ formatDate(expense.date)
+            }}<span *ngIf="linkedEventTitle(expense)">
+              · 連動：{{ linkedEventTitle(expense) }}</span
+            ></small
+          >
         </span>
       </div>
+      <span class="expense-amount">
+        <strong>{{ formatMoney(amountTwd(expense)) }}</strong>
+        <small class="expense-per-person" *ngIf="perPersonTwd(expense) !== null"
+          >（{{ formatMoney(perPersonTwd(expense)!) }}/人）</small
+        >
+        <small *ngIf="expense.currency && expense.currency !== 'TWD'">{{
+          formatOriginalMoney(expense.amount, expense.currency)
+        }}</small>
+      </span>
     </div>
     <div
       class="expense-item is-editable"

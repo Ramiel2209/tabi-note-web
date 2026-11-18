@@ -1,12 +1,5 @@
 import { CommonModule } from "@angular/common";
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
-  SimpleChanges,
-} from "@angular/core";
+import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { Expense, Trip, TripEvent, TripMember } from "../../models/trip.model";
 
 const categoryIcons: Record<string, string> = {
@@ -24,7 +17,7 @@ const categoryIcons: Record<string, string> = {
   imports: [CommonModule],
   templateUrl: "./expense-drawer.component.html",
 })
-export class ExpenseDrawerComponent implements OnChanges {
+export class ExpenseDrawerComponent {
   @Input() trip: Trip | null = null;
   @Input() currentUserId: string | null = null;
   @Input() open = false;
@@ -32,23 +25,6 @@ export class ExpenseDrawerComponent implements OnChanges {
   @Output() readonly addExpense = new EventEmitter<void>();
   @Output() readonly editExpense = new EventEmitter<Expense>();
   @Output() readonly editEvent = new EventEmitter<TripEvent>();
-  @Output() readonly toggleSettled = new EventEmitter<Expense>();
-
-  /** 左滑露出的按鈕寬度（px），需與 CSS 的 .swipe-action 寬度一致 */
-  readonly actionWidth = 96;
-  openId: string | null = null;
-  dragId: string | null = null;
-  dragOffset = 0;
-  private pressId: string | null = null;
-  private dragging = false;
-  private startX = 0;
-  private startY = 0;
-  private baseOffset = 0;
-  private suppressClick = false;
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes["open"] && !this.open) this.resetSwipe();
-  }
 
   get expenses(): Expense[] {
     return this.trip?.expenses ?? [];
@@ -212,75 +188,6 @@ export class ExpenseDrawerComponent implements OnChanges {
   perPersonTwd(expense: Expense): number | null {
     const count = this.participantIds(expense).length;
     return count > 0 ? this.amountTwd(expense) / count : null;
-  }
-
-  itemTransform(expense: Expense): string | null {
-    if (this.dragId === expense.id) return `translateX(${this.dragOffset}px)`;
-    if (this.openId === expense.id) return `translateX(-${this.actionWidth}px)`;
-    return null;
-  }
-
-  onPointerDown(event: PointerEvent, expense: Expense): void {
-    if (event.pointerType === "mouse" && event.button !== 0) return;
-    this.pressId = expense.id;
-    this.dragging = false;
-    this.startX = event.clientX;
-    this.startY = event.clientY;
-    this.baseOffset = this.openId === expense.id ? -this.actionWidth : 0;
-    if (this.openId && this.openId !== expense.id) this.openId = null;
-  }
-
-  onPointerMove(event: PointerEvent, expense: Expense): void {
-    if (this.pressId !== expense.id) return;
-    const dx = event.clientX - this.startX;
-    const dy = event.clientY - this.startY;
-    if (!this.dragging) {
-      if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.2) {
-        this.dragging = true;
-        this.dragId = expense.id;
-        (event.currentTarget as HTMLElement).setPointerCapture?.(
-          event.pointerId
-        );
-      } else {
-        return;
-      }
-    }
-    this.dragOffset = Math.max(
-      -this.actionWidth,
-      Math.min(0, this.baseOffset + dx)
-    );
-  }
-
-  onPointerEnd(expense: Expense): void {
-    if (this.pressId !== expense.id) return;
-    this.pressId = null;
-    if (!this.dragging) return;
-    this.dragging = false;
-    this.openId = this.dragOffset < -this.actionWidth / 2 ? expense.id : null;
-    this.dragId = null;
-    this.suppressClick = true;
-    setTimeout(() => (this.suppressClick = false));
-  }
-
-  onItemClick(expense: Expense): void {
-    if (this.suppressClick) return;
-    if (this.openId) {
-      this.openId = null;
-      return;
-    }
-    this.editExpense.emit(expense);
-  }
-
-  onToggleSettled(expense: Expense): void {
-    this.openId = null;
-    this.toggleSettled.emit(expense);
-  }
-
-  private resetSwipe(): void {
-    this.openId = null;
-    this.dragId = null;
-    this.pressId = null;
-    this.dragging = false;
   }
 
   formatDate(date: string): string {

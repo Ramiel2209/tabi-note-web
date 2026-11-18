@@ -233,13 +233,6 @@ export class AppComponent implements OnDestroy {
     this.ledgerOpen = true;
   }
 
-  toggleExpenseSettled(expense: Expense): void {
-    if (!expense.id) return;
-    const next = !expense.settled;
-    this.store.setExpenseSettled(expense.id, next);
-    this.showToast(next ? "已標記為已結清，不再列入分帳" : "已加回分帳");
-  }
-
   openEventDialog(): void {
     if (!this.activeTrip) {
       this.showToast("請先建立一趟旅程");

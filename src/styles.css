@@ -1976,43 +1976,7 @@ app-itinerary {
   }
 }
 
-/* ===== 帳本：左滑「已結清」＋已結清標籤 ＋ 每人金額 =====
-   貼到全域 styles.css 最底下。顏色變數請依你現有主題調整。 */
-.expense-swipe {
-  position: relative;
-  overflow: hidden;
-  border-radius: 14px; /* 與 .expense-item 的圓角一致 */
-}
-.expense-swipe .swipe-action {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 96px; /* 必須等於 TS 的 actionWidth */
-  border: 0;
-  border-radius: 0;
-  background: #3f9b6a;
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-}
-.expense-swipe .swipe-action.is-restore {
-  background: #8a8f98;
-}
-.expense-swipe .expense-item {
-  position: relative;
-  background: var(--surface, #fff); /* 要不透明，才蓋得住底下的按鈕 */
-  touch-action: pan-y;
-  user-select: none;
-  -webkit-user-select: none;
-  transition: transform 0.2s ease;
-}
-.expense-swipe .expense-item.is-dragging {
-  transition: none;
-}
-.expense-swipe.is-settled .expense-item {
-  opacity: 0.65;
-}
+/* ===== 帳本：已結清標籤 ＋ 每人金額 ===== */
 .expense-title-row {
   display: flex;
   align-items: center;
