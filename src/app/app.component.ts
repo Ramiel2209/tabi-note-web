@@ -6,6 +6,7 @@ import {
   CreateExpenseInput,
   CreateTripInput,
   CreateTripOptionInput,
+  Currency,
   Expense,
   OptionKind,
   Trip,
@@ -36,6 +37,15 @@ const OPTION_KIND_TO_CATEGORY: Record<OptionKind, string> = {
   輕食: "餐廳",
   逛街: "其他",
   景點: "景點",
+};
+
+// ★ 行程分類 → 支出分類
+const EVENT_CATEGORY_TO_EXPENSE_CATEGORY: Record<string, string> = {
+  餐廳: "餐飲",
+  交通: "交通",
+  住宿: "住宿",
+  景點: "門票",
+  其他: "其他",
 };
 
 @Component({
@@ -210,7 +220,9 @@ export class AppComponent implements OnDestroy {
   }
 
   addExpense(input: CreateExpenseInput): void {
-    if (this.editingExpense) {
+    // ★ 草稿支出（來自行程付款）id 是空字串，尚未存在於 trip.expenses，
+    //   所以要走 addExpense，而不是 updateExpense。
+    if (this.editingExpense && this.editingExpense.id) {
       this.store.updateExpense(this.editingExpense.id, input);
       this.showToast("支出已更新！");
     } else {
@@ -473,6 +485,57 @@ export class AppComponent implements OnDestroy {
 
   openEditExpense(expense: Expense): void {
     this.editingExpense = expense;
+    this.expenseDialogOpen = true;
+  }
+
+  /**
+   * ★ 帳本裡「行程已付款」那一列（只有 event、尚未有 Expense）被點擊時，
+   *   用該行程的付款資料組成草稿支出，打開跟一般支出相同的編輯彈窗。
+   *   儲存後會變成正式支出並回寫行程，之後再點就是一般的編輯支出。
+   */
+  openEditPaidEvent(event: TripEvent): void {
+    const trip = this.activeTrip;
+    if (!trip) return;
+    const day = trip.days.find((candidate) =>
+      candidate.events.some((item) => item.id === event.id)
+    );
+
+    const hasOriginalAmount =
+      typeof event.paymentAmount === "number" && event.paymentAmount > 0;
+    const currency: Currency = hasOriginalAmount
+      ? event.paymentCurrency ?? "TWD"
+      : "TWD";
+    const exchangeRate =
+      currency !== "TWD" && typeof event.paymentExchangeRate === "number"
+        ? event.paymentExchangeRate
+        : null;
+    const amount = hasOriginalAmount
+      ? (event.paymentAmount as number)
+      : event.paymentAmountTwd ?? 0;
+    const amountTwd =
+      typeof event.paymentAmountTwd === "number"
+        ? event.paymentAmountTwd
+        : exchangeRate
+        ? amount * exchangeRate
+        : amount;
+
+    const draft: Expense = {
+      id: "", // 空字串 = 尚未存在於 trip.expenses
+      title: event.title,
+      amount,
+      category: EVENT_CATEGORY_TO_EXPENSE_CATEGORY[event.category] ?? "其他",
+      payer: "我",
+      split: "half",
+      payerId: this.currentUserId,
+      participantIds: [], // 留空，彈窗會預設為全部旅伴
+      date: day?.date ?? "",
+      currency,
+      exchangeRate,
+      amountTwd,
+      linkedEventId: event.id,
+    };
+
+    this.editingExpense = draft;
     this.expenseDialogOpen = true;
   }
 
