@@ -280,6 +280,10 @@ export class TripStoreService implements OnDestroy {
       amountTwd: expenseInput.amountTwd,
       payerId: expenseInput.payerId ?? null,
       participantIds: expenseInput.participantIds ?? [],
+      participantAmounts:
+        expenseInput.split === "custom"
+          ? expenseInput.participantAmounts ?? {}
+          : undefined,
       linkedEventId,
       settled: Boolean(expenseInput.settled),
     };
@@ -301,6 +305,10 @@ export class TripStoreService implements OnDestroy {
       amountTwd: expenseInput.amountTwd,
       payerId: expenseInput.payerId ?? null,
       participantIds: expenseInput.participantIds ?? [],
+      participantAmounts:
+        expenseInput.split === "custom"
+          ? expenseInput.participantAmounts ?? {}
+          : undefined,
       linkedEventId: expenseInput.linkedEventId ?? null,
       settled: Boolean(expenseInput.settled),
     };
@@ -569,7 +577,10 @@ export class TripStoreService implements OnDestroy {
     if (!remoteTrip.inviteCode) return;
     try {
       await Promise.all([
-        setDoc(doc(firebaseDb, "trips", remoteTrip.id), remoteTrip),
+        setDoc(
+          doc(firebaseDb, "trips", remoteTrip.id),
+          this.stripUndefined(remoteTrip)
+        ),
         ...(remoteTrip.ownerId === this.auth.currentUser?.uid
           ? [
               setDoc(doc(firebaseDb, "inviteCodes", remoteTrip.inviteCode), {
@@ -584,6 +595,15 @@ export class TripStoreService implements OnDestroy {
     } catch (error) {
       console.warn("旅程寫入 Firestore 失敗，本機資料仍已保存。", error);
     }
+  }
+
+  /**
+   * Firestore 不接受 undefined 欄位（例如非「自訂」分帳時的 participantAmounts），
+   * 一旦出現整筆 setDoc 都會失敗，資料只留在本機，重整後就被雲端舊資料蓋掉。
+   * 寫入前用 JSON 轉一次，把 undefined 欄位全部拿掉（null 會保留）。
+   */
+  private stripUndefined<T>(value: T): T {
+    return JSON.parse(JSON.stringify(value)) as T;
   }
 
   private async deleteRemoteTrip(trip: Trip): Promise<void> {
